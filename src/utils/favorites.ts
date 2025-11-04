@@ -1,6 +1,6 @@
 import { LocalStorage } from "@raycast/api";
 
-const FAVORITES_KEY = "jira-tempo-favorites";
+const FAVORITES_KEY = "tempo-favorites";
 
 export interface FavoriteIssue {
   key: string;

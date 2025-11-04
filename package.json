@@ -1,8 +1,8 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "jira-tempo",
-  "title": "Jira Tempo",
-  "description": "Log and manage Jira work hours with Tempo",
+  "name": "tempo",
+  "title": "Tempo",
+  "description": "Log and manage work hours with Tempo",
   "icon": "extension-icon.png",
   "author": "darchen_gautier",
   "platforms": [
@@ -18,7 +18,7 @@
       "name": "add-worklog",
       "title": "Add Worklog",
       "subtitle": "Tempo",
-      "description": "Log work hours to a Jira issue",
+      "description": "Log work hours to an issue",
       "mode": "view"
     },
     {
@@ -43,7 +43,7 @@
       "type": "textfield",
       "required": true,
       "title": "Jira Base URL",
-      "description": "Your Jira instance URL",
+      "description": "Your Jira instance URL (for issue integration)",
       "placeholder": "https://yourcompany.atlassian.net"
     },
     {

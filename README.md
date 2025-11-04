@@ -1,10 +1,10 @@
-# Jira Tempo
+# Tempo
 
-Log and manage Jira work hours with Tempo.
+Log and manage work hours with Tempo.
 
 ## Features
 
-- **Add Worklog**: Quickly log work hours to any Jira issue with flexible duration formats (1h, 1h30m, 2h)
+- **Add Worklog**: Quickly log work hours to any issue with flexible duration formats (1h, 1h30m, 2h)
 - **List Worklogs**: View recent work logs grouped by day with total hours
 - **Edit & Delete**: Modify durations or remove work logs directly
 - **Issue Selection**: Browse favorites, recent activity, assigned issues, and project issues
@@ -22,6 +22,8 @@ This extension requires configuration of both Tempo and Jira credentials:
 3. Copy the token and add it to the extension preferences
 
 ### 2. Jira API Token
+
+This extension integrates with Jira for issue management. You'll need:
 
 1. Go to [Atlassian API Tokens](https://id.atlassian.com/manage/api-tokens)
 2. Create a new API token (no scopes required)
@@ -43,7 +45,7 @@ You'll also need to provide:
 2. Select an issue from favorites, recent activity, assigned issues, or search
 3. Enter the duration (e.g., 1h, 1h30m, 45m, 2h)
 4. Optionally add a description
-5. Select the date
+5. Select the date (or enter a custom date)
 6. Submit to log your work
 
 ### Viewing Worklogs
@@ -62,3 +64,7 @@ The extension supports flexible duration formats:
 - Combined: `1h30m`, `2h15m`
 - Decimal: `1.5h`, `2.25h`
 - Shorthand: `1h30` (hours and minutes without 'm')
+
+## Future Integrations
+
+This extension is designed to work with Tempo and is ready to integrate with additional tools beyond Jira in future versions.
