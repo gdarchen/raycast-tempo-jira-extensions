@@ -27,6 +27,28 @@ export function formatDate(dateString: string): string {
 }
 
 /**
+ * Get label for a date (Today, Yesterday, or formatted date)
+ * @param date - Date object or YYYY-MM-DD string
+ * @returns Label string
+ */
+export function getDateLabel(date: Date | string): string {
+  const dateStr = typeof date === "string" ? date : formatDateToString(date);
+  return formatDate(dateStr);
+}
+
+/**
+ * Format a Date object to YYYY-MM-DD string
+ * @param date - Date object
+ * @returns Date string in YYYY-MM-DD format
+ */
+export function formatDateToString(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Get date range for the last N days
  * @param days - Number of days to look back
  * @returns Object with fromDate and toDate in YYYY-MM-DD format

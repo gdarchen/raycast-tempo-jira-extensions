@@ -22,8 +22,10 @@ import {
 } from "./services/jira-issues.service";
 import { getFavorites, addToFavorites, removeFromFavorites, FavoriteIssue } from "./utils/favorites";
 import { getRecentActivityIssues, JiraIssue as RecentJiraIssue } from "./services/jira-recent-activity.service";
-import { parseDuration } from "./utils/duration";
+import { parseDuration, formatDuration } from "./utils/duration";
 import { getCurrentUserAccountId, resetCachedAccountId } from "./services/jira-auth.service";
+import { formatDateToString, getDateLabel } from "./utils/date";
+import { TempoWorklogsResponse } from "./types/worklog";
 
 interface Preferences {
   defaultProjectKey?: string;
@@ -32,7 +34,8 @@ interface Preferences {
 type Values = {
   issueKey: string;
   description: string;
-  date: Date;
+  date: string;
+  customDate?: string;
   timeSpent: string;
 };
 
@@ -230,6 +233,7 @@ function IssueSelector({ onSelect }: { onSelect: (issueKey: string) => void }) {
 function WorklogForm({ issueKey, onSuccess }: { issueKey: string; onSuccess: () => void }) {
   const [issue, setIssue] = useState<JiraIssue | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<string>(formatDateToString(new Date()));
 
   // Fetch details of the selected issue
   useEffect(() => {
@@ -259,11 +263,29 @@ function WorklogForm({ issueKey, onSuccess }: { issueKey: string; onSuccess: () 
         return;
       }
 
-      // Format date in local timezone (YYYY-MM-DD)
-      const year = values.date.getFullYear();
-      const month = String(values.date.getMonth() + 1).padStart(2, "0");
-      const day = String(values.date.getDate()).padStart(2, "0");
-      const dateStr = `${year}-${month}-${day}`;
+      // Use custom date if "custom" was selected, otherwise use dropdown value
+      let dateStr = values.date;
+      if (values.date === "custom") {
+        if (!values.customDate) {
+          showToast({
+            style: Toast.Style.Failure,
+            title: "Custom date required",
+            message: "Please enter a date in YYYY-MM-DD format",
+          });
+          return;
+        }
+        // Validate custom date format (YYYY-MM-DD)
+        const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+        if (!dateRegex.test(values.customDate)) {
+          showToast({
+            style: Toast.Style.Failure,
+            title: "Invalid date format",
+            message: "Please use YYYY-MM-DD format (e.g., 2025-11-01)",
+          });
+          return;
+        }
+        dateStr = values.customDate;
+      }
 
       // Get current time (HH:MM:SS) for the start time
       const now = new Date();
@@ -305,10 +327,19 @@ function WorklogForm({ issueKey, onSuccess }: { issueKey: string; onSuccess: () 
         }),
       });
 
+      // Fetch all worklogs for the selected day to calculate total
+      const worklogsResponse = (await fetchFromTempoAPI(
+        `/worklogs/user/${jiraAccountId}?from=${dateStr}&to=${dateStr}`,
+      )) as TempoWorklogsResponse;
+
+      const totalSeconds = worklogsResponse.results.reduce((sum, w) => sum + w.timeSpentSeconds, 0);
+      const totalDuration = formatDuration(totalSeconds);
+      const dayLabel = getDateLabel(dateStr);
+
       await showToast({
         style: Toast.Style.Success,
         title: "Worklog added",
-        message: `${values.timeSpent} logged to ${issueKey}`,
+        message: `${values.timeSpent} logged. ${dayLabel}: ${totalDuration}`,
         primaryAction: {
           title: "View Worklogs",
           onAction: async () => {
@@ -345,7 +376,24 @@ function WorklogForm({ issueKey, onSuccess }: { issueKey: string; onSuccess: () 
         defaultValue="1h"
         info="Enter duration in human format: 1h, 1h30m, 2h, 45m, etc."
       />
-      <Form.DatePicker id="date" title="Date" defaultValue={new Date()} type={Form.DatePicker.Type.Date} />
+      <Form.Dropdown id="date" title="Date" value={selectedDate} onChange={setSelectedDate}>
+        {Array.from({ length: 7 }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          const dateStr = formatDateToString(date);
+          const label = getDateLabel(dateStr);
+          return <Form.Dropdown.Item key={dateStr} value={dateStr} title={label} />;
+        })}
+        <Form.Dropdown.Item key="custom" value="custom" title="Custom date..." />
+      </Form.Dropdown>
+      {selectedDate === "custom" && (
+        <Form.TextField
+          id="customDate"
+          title="Custom Date"
+          placeholder="YYYY-MM-DD"
+          info="Enter a custom date in YYYY-MM-DD format (e.g., 2025-11-01)"
+        />
+      )}
       <Form.TextArea id="description" title="Description" placeholder="Optional work description" />
     </Form>
   );
